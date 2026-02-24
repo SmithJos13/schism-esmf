@@ -635,17 +635,17 @@ subroutine SCHISM_StateUpdateF1(state, name, farray, kwe, isPtr, onElement, rc)
        call ESMF_FieldGet(fieldNode, farrayPtr=farrayPtr2, rc=localrc)
        _SCHISM_LOG_AND_FINALIZE_ON_ERROR_(rc_)
        ! fill internal data structure
-       print*, lbound(farrayPtr2), ubound(farrayPtr2), isPtr%numOwnedNodes
+       !print*, lbound(farrayPtr2), ubound(farrayPtr2), isPtr%numOwnedNodes
        do ip = 1, isPtr%numOwnedNodes
           farray(isPtr%ownedNodeIds(ip)) = farrayPtr2(ip)
        end do
        ! write field on node and element for debugging
-       if (debug_level > 5) then
-          call ESMF_FieldWriteVTK(fieldNode, trim(name)//'_on_node', rc=localrc)
-          _SCHISM_LOG_AND_FINALIZE_ON_ERROR_(rc_)
-          call ESMF_FieldWriteVTK(field, trim(name)//'_on_element', rc=localrc)
-         _SCHISM_LOG_AND_FINALIZE_ON_ERROR_(rc_)
-       end if
+       !if (debug_level > 5) then
+       !   call ESMF_FieldWriteVTK(fieldNode, trim(name)//'_on_node', rc=localrc)
+       !   _SCHISM_LOG_AND_FINALIZE_ON_ERROR_(rc_)
+       !   call ESMF_FieldWriteVTK(field, trim(name)//'_on_element', rc=localrc)
+       !  _SCHISM_LOG_AND_FINALIZE_ON_ERROR_(rc_)
+       !end if
     end if
 
     write(message,'(A)') '--- SCHISM_StateUpdateF1 imported '//trim(name)
@@ -1408,11 +1408,11 @@ subroutine SCHISM_MeshCreateElement(comp, kwe, rc)
       nodemask(indx) = idry(ip)
 
       ! print out node related variables, just for debugging
-      if (.false.) then
-        write(message,'(A,2I8,2F10.3,I3)') trim(compName)//': nodeids, owner, x, y, mask = ', &
-          nodeids(indx), nodeowners(indx), nodecoords2d(2*indx-1), nodecoords2d(2*indx), nodemask(indx)
-        call ESMF_LogWrite(trim(message), ESMF_LOGMSG_INFO)
-      end if
+      !if (.false.) then
+      !  write(message,'(A,2I8,2F10.3,I3)') trim(compName)//': nodeids, owner, x, y, mask = ', &
+      !    nodeids(indx), nodeowners(indx), nodecoords2d(2*indx-1), nodecoords2d(2*indx), nodemask(indx)
+      !  call ESMF_LogWrite(trim(message), ESMF_LOGMSG_INFO)
+      !end if
 !    end if
   end do !i=1,np
 
@@ -1486,11 +1486,11 @@ subroutine SCHISM_MeshCreateElement(comp, kwe, rc)
       elementarea(indx) = area(ie)
 
       ! print out element related variables, just for debugging
-      if (.false.) then
-        write(message,'(A,I8,2F10.3,I3)') trim(compName)//': elementids, x, y, mask = ', &
-          elementids(indx), elementcoords2d(2*indx-1), elementcoords2d(2*indx), elementmask(indx)
-        call ESMF_LogWrite(trim(message), ESMF_LOGMSG_INFO)
-      end if
+      !if (.false.) then
+      !  write(message,'(A,I8,2F10.3,I3)') trim(compName)//': elementids, x, y, mask = ', &
+      !    elementids(indx), elementcoords2d(2*indx-1), elementcoords2d(2*indx), elementmask(indx)
+      !  call ESMF_LogWrite(trim(message), ESMF_LOGMSG_INFO)
+      !end if
 !    end if
   end do !ie=1,ne
 
@@ -1993,8 +1993,8 @@ subroutine SCHISM_MeshCreateNode(comp, kwe, rc)
   fieldNode = ESMF_FieldCreate(name='fieldNode', mesh=meshNode, array=array, &
      meshloc=ESMF_MESHLOC_NODE, rc=localrc)
   _SCHISM_LOG_AND_FINALIZE_ON_ERROR_(rc_)
-  print*, "foreignNodeIds min, max = ", minval(isDataPtr%foreignNodeGlobIds), maxval(isDataPtr%foreignNodeGlobIds)
-  print*, "nodeids min, max = ", minval(nodeids(np+1:npa)), maxval(nodeids(np+1:npa))
+  !print*, "foreignNodeIds min, max = ", minval(isDataPtr%foreignNodeGlobIds), maxval(isDataPtr%foreignNodeGlobIds)
+  !print*, "nodeids min, max = ", minval(nodeids(np+1:npa)), maxval(nodeids(np+1:npa))
 
   ! create routehandle for halo update
   isPresent = ESMF_RouteHandleIsCreated(isDataPtr%haloHandle, rc=localrc)
