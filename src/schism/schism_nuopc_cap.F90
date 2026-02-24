@@ -1283,8 +1283,9 @@ subroutine SCHISM_Import(comp, importState, clock, rc)
   use schism_glbl     , only: airt2,shum2,srad,hradd,fluxprc,npa
   use schism_glbl     , only: uvice,vvice,taux,tauy,vsno,vice, &
                               aice,ifresh_flux,isalt_flux,iheat_flux, &
-                              isw_pen,frzmlt,tau_oi,fresh_wa_flux, &
-                              salinity_flux,net_heat_flux,srad_th_ice,CdnIO,znl, nvrt
+                              isw_pen,frzmlt,tau_oi,tau_oix,tau_oiy,fresh_wa_flux, &
+                              salinity_flux,net_heat_flux,srad_th_ice,CdnIO,znl, nvrt, tr_nd
+  use schism_glbl     , only:  znl, nvrt, tr_nd
   use schism_esmf_util, only: SCHISM_StateImportWaveTensor
   use schism_esmf_util, only: SCHISM_StateImportWave3dVortex
   use schism_esmf_util, only: SCHISM_StateUpdate
@@ -1522,27 +1523,30 @@ subroutine SCHISM_Import(comp, importState, clock, rc)
       !>Ice ocean stress -------------------------------
       !>Taux,Tauy are in units of [N/m/m]
 
-      tau_oi(1,i)=taux(i)
-      tau_oi(2,i)=tauy(i)
+      tau_oix(i)=taux(i)
+      tau_oiy(i)=tauy(i)
 
 
       !> Salinity flux ---------------------------------
       !> This is the slainity flux to the ocean from ice 
-      !> formaiton and melt. isalt has units [kg/s/m/m] 
-      
-      salinity_flux(i) = aice(i)*(isalt_flux(i))/real(1000)
-
-      !>Fresh water flux -------------------------------
+      !> formaiton and melt. isalt has units [kg/s/m/m]
+      !> if pos. ocn gains salt so fw would be opposite 
+      if (tr_nd(2,nvrt,i) < real(1) ) then
+         salinity_flux(i) = ((isalt_flux(i))*real(1000))/real(1)
+      else
+         salinity_flux(i) = ((isalt_flux(i))*real(1000))/tr_nd(2,nvrt,i)
+      endif
+      !>Fresh water flux -------------------------------\
       !> ifresh_flux is in units of [kg/s/m/m]
       !> Water is distributed across whole element
 
-      fresh_wa_flux(i) = ifresh_flux(i)
+      fresh_wa_flux(i) = ifresh_flux(i)-salinity_flux(i)!*rho0
 
       !>Heat flux ice to ocean  ------------------------
       !> iheat_flux is in units of [W/m/m]
       !> Energy is distributed across whole element
 
-      net_heat_flux(i) = iheat_flux(i)
+      net_heat_flux(i) = iheat_flux(i) + max(real(0.0),frzmlt(i)/aice(i))
 
       !>Short-wave pen. flux ---------------------------
       !>isw_pen is in units of [W/m/m]
@@ -1552,12 +1556,14 @@ subroutine SCHISM_Import(comp, importState, clock, rc)
     else
 
       !> No ice so all these values are zero
-      tau_oi(1,i)      = real(0)
-      tau_oi(2,i)      = real(0)
+      !tau_oi(1,i)      = real(0)
+      !tau_oi(2,i)      = real(0)
+      tau_oix(i)       = real(0)
+      tau_oiy(i)       = real(0)
       salinity_flux(i) = real(0)
       fresh_wa_flux(i) = real(0) !+ max(real(0.0),frzmlt(i))
       net_heat_flux(i) = real(0)
-      srad_th_ice(i)  = real(0)
+      srad_th_ice(i)   = real(0)
     
     endif
   enddo
